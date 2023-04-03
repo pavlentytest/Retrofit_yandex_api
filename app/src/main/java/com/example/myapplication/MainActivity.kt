@@ -2,8 +2,11 @@ package com.example.myapplication
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.widget.EditText
+import android.widget.TextView
 import com.example.myapplication.api.YandexAPI
 import com.example.myapplication.model.Answer
 import retrofit2.Call
@@ -15,11 +18,21 @@ import retrofit2.converter.gson.GsonConverterFactory
 class MainActivity : AppCompatActivity() {
 
     lateinit var editText: EditText
+    lateinit var textView: TextView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        editText = findViewById<EditText>(R.id.editText)
-
+        editText = findViewById(R.id.editText)
+        textView = findViewById(R.id.textView)
+        editText.addTextChangedListener(object: TextWatcher{
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+            override fun afterTextChanged(p0: Editable?) {
+                doRequest()
+            }
+        })
     }
 
     fun doRequest(){
@@ -33,11 +46,13 @@ class MainActivity : AppCompatActivity() {
         api.complete(key, editText.text.toString(), "en", limit).enqueue(object: Callback<Answer>{
             override fun onResponse(call: Call<Answer>, response: Response<Answer>) {
                 Log.d("RRR",response.code().toString())
+                if(response.code() == 200) {
+                    textView.text = response.body()?.text!!.joinToString("\n")
+                }
             }
             override fun onFailure(call: Call<Answer>, t: Throwable) {
                 Log.d("RRR",t.toString())
             }
-
         })
 
     }
