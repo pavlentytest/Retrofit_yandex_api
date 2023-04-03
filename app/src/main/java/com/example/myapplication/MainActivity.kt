@@ -7,6 +7,7 @@ import android.text.TextWatcher
 import android.util.Log
 import android.widget.EditText
 import android.widget.TextView
+import com.example.myapplication.api.NobelAPI
 import com.example.myapplication.api.YandexAPI
 import com.example.myapplication.model.Answer
 import retrofit2.Call
@@ -22,17 +23,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        editText = findViewById(R.id.editText)
         textView = findViewById(R.id.textView)
-        editText.addTextChangedListener(object: TextWatcher{
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-            override fun afterTextChanged(p0: Editable?) {
-                doRequest()
-            }
-        })
+       doNobelRequest()
     }
 
     fun doRequest(){
@@ -52,6 +44,28 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onFailure(call: Call<Answer>, t: Throwable) {
                 Log.d("RRR",t.toString())
+            }
+        })
+
+    }
+    fun doNobelRequest(){
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.nobelprize.org/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val api: NobelAPI = retrofit.create(NobelAPI::class.java)
+        api.getData().enqueue(object: Callback<List<NobelAnswer>>{
+            override fun onResponse(
+                call: Call<List<NobelAnswer>>,
+                response: Response<List<NobelAnswer>>
+            ) {
+                val res : NobelAnswer = response.body()!!.get(0)
+                Log.d("RRR", res.laureates[0].fullName.en.toString())
+                Log.d("RRR", res.laureates[1].fullName.en.toString())
+            }
+
+            override fun onFailure(call: Call<List<NobelAnswer>>, t: Throwable) {
+
             }
         })
 
